@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
@@ -7,7 +8,8 @@ const Book = mongoose.model('Book')
 
 app.use(bodyParser.json())
 
-mongoose.connect('mongodb://abhiadmin:Pass1234@bookserverice-shard-00-00-nepfn.gcp.mongodb.net:27017,bookserverice-shard-00-01-nepfn.gcp.mongodb.net:27017,bookserverice-shard-00-02-nepfn.gcp.mongodb.net:27017/test?ssl=true&replicaSet=bookserverice-shard-0&authSource=admin&retryWrites=true', () => {
+
+mongoose.connect(process.env.CONNECTION_STRING, () => {
   console.log('Connected to Database')
 })
 
@@ -23,7 +25,7 @@ app.post('/book', (req, res) => {
     numberpages: req.body.numberpages,
     publisher: req.body.publisher
   }
-  
+
   //create a new book
   var book = new Book(newBook)
 
@@ -56,6 +58,16 @@ app.get('/book/:id', (req, res) => {
     if (err) throw err
   })
 })
+
+
+app.delete('/book/:id', (req, res) => {
+  Book.findOneAndDelete(req.params.id).then(() => {
+    res.send('Book removed from Database')
+  }).catch(err => {
+    console.log('ERROR: ', err)
+  })
+})
+
 
 app.listen(4545, () => {
   console.log('Up and Running!')
